@@ -31,9 +31,8 @@ public class AppUserController {
 
     @PostMapping
     public ResponseEntity<AppUserDTO> addUser(@RequestBody AddUserREQ addUserReq) {
-        return appUserServices.addUser(addUserReq)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        AppUserDTO saved = appUserServices.addUser(addUserReq).orElse(null);
+        return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/{id}")
