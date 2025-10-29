@@ -3,6 +3,7 @@ package com.app.ecom_application.services.impl;
 import com.app.ecom_application.dto.userDto.AppUserDTO;
 import com.app.ecom_application.dto.userDto.request.AddUserREQ;
 import com.app.ecom_application.dto.userDto.request.UpdateUserREQ;
+import com.app.ecom_application.entity.Address;
 import com.app.ecom_application.entity.AppUser;
 import com.app.ecom_application.repository.AppUserRepository;
 import com.app.ecom_application.services.IAppUserServices;
@@ -17,7 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AppUserServicesImpl implements IAppUserServices {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final AppUserRepository appUserRepository;
 
     @Override
