@@ -2,7 +2,6 @@ package com.app.ecom_application.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,41 +14,45 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private CustomErrorResponse buildErrorResponse(Exception e, HttpStatus status, WebRequest request, String message) {
+        return CustomErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .message(message != null ? message : e.getMessage())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleAllException(Exception e, WebRequest request) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now().toString());
-        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        response.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-        response.put("message", e.getMessage());
-        response.put("path", request.getDescription(false).replace("uri=",""));
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        CustomErrorResponse customErrorResponse = buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, request, null);
+        return new ResponseEntity<>(customErrorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Object> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Bad Request");
-        body.put("message", ex.getMessage());
-        body.put("path", request.getDescription(false).replace("uri=", ""));
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        CustomErrorResponse customErrorResponse = buildErrorResponse(ex, HttpStatus.BAD_REQUEST, request, null);
+        return new ResponseEntity<>(customErrorResponse, HttpStatus.BAD_REQUEST);
     }
 
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("timestamp", LocalDateTime.now());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", "Validation Failed");
+    public ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex, WebRequest request) {
 
         // Collect validation errors
         Map<String, String> fieldErrors = new HashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
                 fieldErrors.put(error.getField(), error.getDefaultMessage()));
 
-        body.put("message", fieldErrors);
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        String errorMessage = "Validation Failed : " + fieldErrors;
+        CustomErrorResponse customErrorResponse = buildErrorResponse(ex, HttpStatus.BAD_REQUEST, request, errorMessage);
+        return new ResponseEntity<>(customErrorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleResponseNotFound(ResourceNotFoundException e, WebRequest request) {
+        CustomErrorResponse customErrorResponse = buildErrorResponse(e, HttpStatus.NOT_FOUND, request, null);
+        return new ResponseEntity<>(customErrorResponse, HttpStatus.NOT_FOUND);
     }
 }

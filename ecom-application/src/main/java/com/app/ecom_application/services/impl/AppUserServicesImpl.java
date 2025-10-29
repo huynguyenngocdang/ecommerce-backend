@@ -5,6 +5,7 @@ import com.app.ecom_application.dto.userDto.request.AddUserREQ;
 import com.app.ecom_application.dto.userDto.request.UpdateUserREQ;
 import com.app.ecom_application.entity.Address;
 import com.app.ecom_application.entity.AppUser;
+import com.app.ecom_application.exception.ResourceNotFoundException;
 import com.app.ecom_application.repository.AppUserRepository;
 import com.app.ecom_application.services.IAppUserServices;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +23,7 @@ public class AppUserServicesImpl implements IAppUserServices {
     private final AppUserRepository appUserRepository;
 
     @Override
-    public Optional<AppUserDTO> addUser(AddUserREQ addUserReq) {
+    public AppUserDTO addUser(AddUserREQ addUserReq) {
         return Optional.of(addUserReq)
                 .map(addUser -> mapper.convertValue(addUser, AppUser.class))
                 .map(user -> {
@@ -32,7 +33,8 @@ public class AppUserServicesImpl implements IAppUserServices {
                     return user;
                 })
                 .map(appUserRepository::save)
-                .map(saved -> mapper.convertValue(saved, AppUserDTO.class));
+                .map(saved -> mapper.convertValue(saved, AppUserDTO.class))
+                .orElse(null);
     }
 
     @Override
@@ -44,13 +46,14 @@ public class AppUserServicesImpl implements IAppUserServices {
     }
 
     @Override
-    public Optional<AppUserDTO> getUserById(Long id) {
+    public AppUserDTO getUserById(Long id) {
         return appUserRepository.findById(id)
-                .map(appUser -> mapper.convertValue(appUser, AppUserDTO.class));
+                .map(appUser -> mapper.convertValue(appUser, AppUserDTO.class))
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override
-    public Optional<AppUserDTO> updateUser(Long id, UpdateUserREQ updateUserReq) {
+    public AppUserDTO updateUser(Long id, UpdateUserREQ updateUserReq) {
         return appUserRepository.findById(id)
                 .filter(appUser -> appUser.getUsername().equals(updateUserReq.getUsername()))
                 .map(existingAppUser -> {
@@ -58,15 +61,17 @@ public class AppUserServicesImpl implements IAppUserServices {
                     existingAppUser.setLastName(updateUserReq.getLastName());
                     appUserRepository.save(existingAppUser);
                     return mapper.convertValue(existingAppUser, AppUserDTO.class);
-                });
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override
-    public Optional<AppUserDTO> deleteUser(Long id) {
+    public AppUserDTO deleteUser(Long id) {
         return appUserRepository.findById(id)
                 .map(user -> {
                     appUserRepository.delete(user);
                     return mapper.convertValue(user, AppUserDTO.class);
-                });
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 }

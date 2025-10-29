@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IAppUserServices {
-    Optional<AppUserDTO> addUser(AddUserREQ addUserReq);
+    AppUserDTO addUser(AddUserREQ addUserReq);
     List<AppUserDTO> getUsers();
-    Optional<AppUserDTO> getUserById(Long id);
-    Optional<AppUserDTO> updateUser(Long id, UpdateUserREQ updateUserReq);
-    Optional<AppUserDTO> deleteUser(Long id);
+    AppUserDTO getUserById(Long id);
+    AppUserDTO updateUser(Long id, UpdateUserREQ updateUserReq);
+    AppUserDTO deleteUser(Long id);
 }

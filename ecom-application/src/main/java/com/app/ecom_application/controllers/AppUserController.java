@@ -31,28 +31,25 @@ public class AppUserController {
 
     @PostMapping
     public ResponseEntity<AppUserDTO> addUser(@RequestBody AddUserREQ addUserReq) {
-        AppUserDTO saved = appUserServices.addUser(addUserReq).orElse(null);
+        AppUserDTO saved = appUserServices.addUser(addUserReq);
         return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<AppUserDTO> getUserById(@PathVariable Long id) {
-        return appUserServices.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        AppUserDTO appUserDTO = appUserServices.getUserById(id);
+        return ResponseEntity.ok(appUserDTO);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<AppUserDTO> updateUser(@PathVariable Long id, @RequestBody UpdateUserREQ updateUserREQ) {
-        return appUserServices.updateUser(id, updateUserREQ)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        AppUserDTO saved = appUserServices.updateUser(id, updateUserREQ);
+        return ResponseEntity.ok(saved);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<AppUserDTO> deleteUser(@PathVariable Long id) {
-        return appUserServices.deleteUser(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        AppUserDTO deleted = appUserServices.deleteUser(id);
+        return ResponseEntity.ok(deleted);
     }
 }
